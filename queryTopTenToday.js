@@ -46,7 +46,7 @@ async function queryTopTenToday(data) {
         }
       }
     }
-    // return eventsTodaySortedByClosest.slice(0, 10);
+    return eventsTodaySortedByClosest.slice(0, 10);
   } catch (error) {
     console.log(error);
     return null;

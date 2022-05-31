@@ -1,7 +1,8 @@
+import express from 'express';
+import cors from 'cors';
 import mongoose from 'mongoose';
 import queryTopTen from './queryTopTen.js';
 import queryTopTenToday from './queryTopTenToday.js';
-import express from 'express';
 import 'dotenv/config';
 
 let connectionDataString = '';
@@ -18,15 +19,16 @@ mongoose.connection.on('connected', () => {
 });
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-app.get('/api/getTopTenToday', async (req, res) => {
+app.post('/api/getTopTenToday', async (req, res) => {
   //logic
   const result = await queryTopTenToday(req.body);
   res.send(JSON.stringify(result));
   // res.send(`OK`);
 });
 
-app.get('/api/getTopTen', (req, res) => {
+app.post('/api/getTopTen', (req, res) => {
   //logic
   res.send(queryTopTen(req.body));
   res.send(`OK`);
