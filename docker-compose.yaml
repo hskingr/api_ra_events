@@ -1,0 +1,12 @@
+version: '3'
+services:
+  api_ra_events:
+    container_name: "api_ra_events"
+    build: .
+    command: "npm run prod"
+    environment:
+      - NODE_ENV=production
+networks:
+  default:
+    name: ra_events_grabber_network
+    external: true
