@@ -6,6 +6,7 @@ services:
     command: "npm run prod"
     environment:
       - NODE_ENV=production
+    image: f4zphp27xi2s27yn/my_repo_topor:ra_events_api
 networks:
   default:
     name: ra_events_grabber_network

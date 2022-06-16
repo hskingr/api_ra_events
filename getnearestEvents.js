@@ -1,14 +1,14 @@
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import Venue from './venueModel.js';
 import Event from './eventModel.js';
 import Artist from './artistModel.js';
 
-async function queryTopTenToday(data) {
+async function getNearestEvents({ long, lat, date = new Date() }) {
   try {
     const eventResults = await Event.find({
       date: {
-        $gte: startOfDay(new Date()),
-        $lte: endOfDay(new Date())
+        $gte: startOfDay(parseISO(date)),
+        $lte: endOfDay(parseISO(date))
       }
     })
       .populate({
@@ -24,7 +24,7 @@ async function queryTopTenToday(data) {
     const venueResults = await Venue.aggregate([
       {
         $geoNear: {
-          near: { type: 'Point', coordinates: [parseFloat(data.long), parseFloat(data.lat)] },
+          near: { type: 'Point', coordinates: [parseFloat(long), parseFloat(lat)] },
           key: 'location',
           distanceField: 'dist.calculated'
         }
@@ -53,4 +53,4 @@ async function queryTopTenToday(data) {
   }
 }
 
-export default queryTopTenToday;
+export default getNearestEvents;

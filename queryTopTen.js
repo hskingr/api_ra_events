@@ -9,12 +9,13 @@ async function queryTopTen(data) {
           key: 'location',
           distanceField: 'dist.calculated'
         }
-      },
-      { $limit: 5 }
+      }
+      // { $limit: 5 }
     ]);
     return result;
   } catch (error) {
     console.log(error);
+    return null;
   }
 }
 

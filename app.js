@@ -3,6 +3,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import queryTopTen from './queryTopTen.js';
 import queryTopTenToday from './queryTopTenToday.js';
+import getNearestEvents from './getnearestEvents.js';
 import 'dotenv/config';
 
 let connectionDataString = '';
@@ -24,14 +25,29 @@ app.use(cors());
 app.post('/api/getTopTenToday', async (req, res) => {
   //logic
   const result = await queryTopTenToday(req.body);
+  console.log(result.length);
+  if (result.length === 0) {
+    console.log('No Results');
+  }
   res.send(JSON.stringify(result));
-  // res.send(`OK`);
 });
 
-app.post('/api/getTopTen', (req, res) => {
+app.post('/api/getResults', async (req, res) => {
   //logic
-  res.send(queryTopTen(req.body));
-  res.send(`OK`);
+  console.log(req.body);
+  //req.body should contain: lat, long and date
+  const result = await getNearestEvents(req.body);
+  if (result.length === 0) {
+    console.log('No Results');
+  }
+  res.send(JSON.stringify(result));
+});
+
+app.post('/api/getTopTen', async (req, res) => {
+  //logic
+  const result = await queryTopTen(req.body);
+  console.log(result);
+  res.send();
 });
 
 const port = process.env.PORT || 8030;
