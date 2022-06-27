@@ -3,7 +3,7 @@ import Venue from './venueModel.js';
 import Event from './eventModel.js';
 import Artist from './artistModel.js';
 
-async function getNearestEvents({ long, lat, date = new Date() }) {
+async function getNearestEvents({ long, lat, date = new Date(), pageNumber = 0 }) {
   try {
     const eventResults = await Event.find({
       date: {
@@ -46,7 +46,17 @@ async function getNearestEvents({ long, lat, date = new Date() }) {
         }
       }
     }
-    return eventsTodaySortedByClosest.slice(0, 10);
+    const amountOfResults = eventsTodaySortedByClosest.length;
+    let pageNumberLimit = pageNumber + 10;
+    // if there less than 10 more result left, then only return what is left
+    if (pageNumber + 10 > amountOfResults) {
+      pageNumberLimit = amountOfResults;
+    }
+    const result = {
+      requestedEvents: eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit),
+      amountOfResults: eventsTodaySortedByClosest.length
+    };
+    return result;
   } catch (error) {
     console.log(error);
     return null;

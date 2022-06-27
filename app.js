@@ -33,9 +33,9 @@ app.post('/api/getTopTenToday', async (req, res) => {
 });
 
 app.post('/api/getResults', async (req, res) => {
-  //logic
+  // logic
   console.log(req.body);
-  //req.body should contain: lat, long and date
+  // req.body should contain: lat, long and date
   const result = await getNearestEvents(req.body);
   if (result.length === 0) {
     console.log('No Results');
