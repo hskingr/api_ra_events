@@ -3,12 +3,16 @@ import Venue from './venueModel.js';
 import Event from './eventModel.js';
 import Artist from './artistModel.js';
 
-async function getNearestEvents({ long, lat, date = new Date(), pageNumber = 0 }) {
+async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 0 }) {
   try {
+    // converts the date to be readable by date-fns if it is a string
+    const formattedDate = typeof theDate === 'string' ? parseISO(theDate) : theDate;
+    console.log(`formatteddate: ${formattedDate}`);
+    console.log(`startofday ${startOfDay(formattedDate)}, end of day ${endOfDay(formattedDate)}`);
     const eventResults = await Event.find({
       date: {
-        $gte: startOfDay(parseISO(date)),
-        $lte: endOfDay(parseISO(date))
+        $gte: startOfDay(formattedDate),
+        $lte: endOfDay(formattedDate)
       }
     })
       .populate({
@@ -56,6 +60,7 @@ async function getNearestEvents({ long, lat, date = new Date(), pageNumber = 0 }
       requestedEvents: eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit),
       amountOfResults: eventsTodaySortedByClosest.length
     };
+    // console.log(result);
     return result;
   } catch (error) {
     console.log(error);
