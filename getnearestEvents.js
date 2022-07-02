@@ -5,6 +5,7 @@ import Artist from './artistModel.js';
 
 async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 0 }) {
   try {
+    console.log(`received request for ${long} ${lat}, ${theDate}, ${pageNumber}`);
     // converts the date to be readable by date-fns if it is a string
     const formattedDate = typeof theDate === 'string' ? parseISO(theDate) : theDate;
     console.log(`formatteddate: ${formattedDate}`);
@@ -51,16 +52,23 @@ async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 
       }
     }
     const amountOfResults = eventsTodaySortedByClosest.length;
-    let pageNumberLimit = pageNumber + 10;
+    const startPage = pageNumber * 10 + 1;
+    let pageNumberLimit = pageNumber * 10 + 10;
     // if there less than 10 more result left, then only return what is left
-    if (pageNumber + 10 > amountOfResults) {
+    if (startPage + 10 > amountOfResults) {
       pageNumberLimit = amountOfResults;
+    } else {
+      pageNumberLimit = pageNumber * 10 + 10;
     }
     const result = {
       requestedEvents: eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit),
       amountOfResults: eventsTodaySortedByClosest.length
     };
     // console.log(result);
+    // console.log(eventsTodaySortedByClosest.map((item) => `${item.eventResult.eventName}`));
+    // const test = eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit);
+    // console.log(test.map((item) => `${item.eventResult.eventName}`));
+    console.log(pageNumber, startPage, pageNumberLimit);
     return result;
   } catch (error) {
     console.log(error);
