@@ -51,24 +51,37 @@ async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 
         }
       }
     }
-    const amountOfResults = eventsTodaySortedByClosest.length;
-    const startPage = pageNumber * 10 + 1;
-    let pageNumberLimit = pageNumber * 10 + 10;
+    const amountOfResults = eventsTodaySortedByClosest.length - 1;
+    console.log(`amount of results ${amountOfResults}`);
+    const maxPages = Math.floor(amountOfResults / 10);
+    console.log(`maxPages ${maxPages}`);
+    let startPage;
+    if (pageNumber === 0) {
+      startPage = 0;
+    } else {
+      startPage = pageNumber * 10;
+    }
+    const pageNumberLimit = pageNumber * 10 + 10;
     // if there less than 10 more result left, then only return what is left
     if (startPage + 10 > amountOfResults) {
-      pageNumberLimit = amountOfResults;
+      startPage = amountOfResults;
     } else {
-      pageNumberLimit = pageNumber * 10 + 10;
+      startPage = pageNumber * 10 + 10;
     }
+    console.log(`result number at start of current page: ${startPage}`);
+    console.log(`page number limit: ${pageNumberLimit}`);
+    console.log(`current page number: ${pageNumber}`);
+    // if (pageNumber > maxPages) {
+    //   pageNumber = amountOfResults;
+    // }
     const result = {
       requestedEvents: eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit),
-      amountOfResults: eventsTodaySortedByClosest.length
+      amountOfResults: eventsTodaySortedByClosest.length - 1
     };
     // console.log(result);
-    // console.log(eventsTodaySortedByClosest.map((item) => `${item.eventResult.eventName}`));
+    console.log(result.requestedEvents.map((item) => `${item.eventResult.eventName}`));
     // const test = eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit);
     // console.log(test.map((item) => `${item.eventResult.eventName}`));
-    console.log(pageNumber, startPage, pageNumberLimit);
     return result;
   } catch (error) {
     console.log(error);
