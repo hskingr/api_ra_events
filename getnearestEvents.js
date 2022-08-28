@@ -51,7 +51,7 @@ async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 
         }
       }
     }
-    const amountOfResults = eventsTodaySortedByClosest.length - 1;
+    const amountOfResults = eventsTodaySortedByClosest.length;
     console.log(`amount of results ${amountOfResults}`);
     const maxPages = Math.floor(amountOfResults / 10);
     console.log(`maxPages ${maxPages}`);
@@ -76,7 +76,7 @@ async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 
     // }
     const result = {
       requestedEvents: eventsTodaySortedByClosest.slice(pageNumber, pageNumberLimit),
-      amountOfResults: eventsTodaySortedByClosest.length - 1
+      amountOfResults: eventsTodaySortedByClosest.length
     };
     // console.log(result);
     console.log(result.requestedEvents.map((item) => `${item.eventResult.eventName}`));

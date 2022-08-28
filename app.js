@@ -8,6 +8,8 @@ import 'dotenv/config';
 
 async function routes(app) {
   app.post('/api/getTopTenToday', async (req, res) => {
+    console.log(`Request made to getTopTenToday`);
+
     // logic
     const result = await queryTopTenToday(req.body);
     console.log(result.length);
@@ -19,6 +21,7 @@ async function routes(app) {
 
   app.post('/api/getResults', async (req, res) => {
     try {
+      console.log(`Request made to getResults`);
       // logic
       console.log(req.body);
       // req.body should contain: lat, long and date
@@ -35,9 +38,10 @@ async function routes(app) {
 
   app.post('/api/getTopTen', async (req, res) => {
     // logic
+    console.log(`Request made to getTopTen`);
     const result = await queryTopTen(req.body);
     console.log(result);
-    res.send();
+    res.send(result);
   });
 }
 
@@ -50,27 +54,26 @@ async function main() {
     } else if (process.env.NODE_ENV === 'production') {
       connectionDataString = process.env.MONGODB_CONNECTION_STRING_PROD;
     }
-
+    mongoose.set('debug', true);
+    console.log(connectionDataString);
     await mongoose.connect(connectionDataString, { useNewUrlParser: true, useUnifiedTopology: true });
+
     const db = mongoose.connection;
     console.log(db.readyState);
-    db.on('connection', () => {
+    if (db.readyState === 1) {
       console.log(`Connected!`);
-    });
-    db.on('connecting', () => {
-      console.log(`Connecting!`);
-    });
-    db.on('error', () => {
-      console.log(`Connection Error`);
-    });
+      const app = express();
+      app.use(express.json());
+      app.use(
+        cors({
+          origin: ['https://www.residentmapper.net', 'https://residentmapper.net']
+        })
+      );
 
-    const app = express();
-    app.use(express.json());
-    app.use(cors());
-
-    const port = process.env.PORT || 8030;
-    app.listen(port, () => console.log(`listening on port ${port}...`));
-    routes(app);
+      const port = process.env.PORT || 8030;
+      app.listen(port, () => console.log(`listening on port ${port}...`));
+      routes(app);
+    }
   } catch (error) {
     console.log(`main error ${error}`);
   }
