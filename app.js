@@ -1,4 +1,6 @@
+import https from 'https';
 import express from 'express';
+import fs from 'fs';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import queryTopTen from './queryTopTen.js';
@@ -51,17 +53,33 @@ async function main() {
 
     if (process.env.NODE_ENV === 'development') {
       connectionDataString = process.env.MONGODB_CONNECTION_STRING_DEV;
+      mongoose.set('debug', true);
+      console.log(connectionDataString);
+      await mongoose.connect(connectionDataString, { useNewUrlParser: true, useUnifiedTopology: true });
+
+      const db = mongoose.connection;
+      console.log(db.readyState);
+      if (db.readyState === 1) {
+        console.log(`Connected!`);
+        const app = express();
+        app.use(express.json());
+        app.use(
+          cors({
+            origin: ['https://www.residentmapper.net', 'https://residentmapper.net']
+          })
+        );
+
+        const port = process.env.PORT || 8030;
+        app.listen(port, () => console.log(`listening on port ${port}...`));
+        routes(app);
+      }
     } else if (process.env.NODE_ENV === 'production') {
       connectionDataString = process.env.MONGODB_CONNECTION_STRING_PROD;
-    }
-    mongoose.set('debug', true);
-    console.log(connectionDataString);
-    await mongoose.connect(connectionDataString, { useNewUrlParser: true, useUnifiedTopology: true });
+      console.log(connectionDataString);
+      await mongoose.connect(connectionDataString, { useNewUrlParser: true, useUnifiedTopology: true });
 
-    const db = mongoose.connection;
-    console.log(db.readyState);
-    if (db.readyState === 1) {
-      console.log(`Connected!`);
+      const db = mongoose.connection;
+      console.log(db.readyState);
       const app = express();
       app.use(express.json());
       app.use(
@@ -69,9 +87,13 @@ async function main() {
           origin: ['https://www.residentmapper.net', 'https://residentmapper.net']
         })
       );
-
       const port = process.env.PORT || 8030;
-      app.listen(port, () => console.log(`listening on port ${port}...`));
+      const key = fs.readFileSync('/ssl_certs/privkey.pem');
+      const cert = fs.readFileSync('/ssl_certs/cert.pem');
+      const ca = fs.readFileSync('/ssl_certs/chain.pem');
+      https.createServer({ key, cert, ca }, app).listen(8030, () => {
+        console.log(`listening on port ${port}...`);
+      });
       routes(app);
     }
   } catch (error) {
