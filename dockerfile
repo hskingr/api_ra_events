@@ -3,4 +3,4 @@ WORKDIR /
 COPY . /
 COPY package.json /
 RUN npm i
-EXPOSE 8030
+EXPOSE 80

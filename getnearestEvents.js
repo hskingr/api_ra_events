@@ -3,8 +3,15 @@ import Venue from './venueModel.js';
 import Event from './eventModel.js';
 import Artist from './artistModel.js';
 
-async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 0 }) {
+async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
   try {
+    // if (process.env.NODE_ENV === 'development') {
+    //   date = 'Fri, 26 Aug 2022 23:59:59 GMT';
+    // }
+
+    const theDate = new Date(date);
+    // console.log(theDate.toISOString());
+
     console.log(`received request for ${long} ${lat}, ${theDate}, ${pageNumber}`);
     // converts the date to be readable by date-fns if it is a string
     const formattedDate = typeof theDate === 'string' ? parseISO(theDate) : theDate;
@@ -15,16 +22,9 @@ async function getNearestEvents({ long, lat, theDate = new Date(), pageNumber = 
         $gte: startOfDay(formattedDate),
         $lte: endOfDay(formattedDate)
       }
-    })
-      .populate({
-        path: 'linkedArtists',
-        populate: {
-          path: 'artist_id'
-        }
-      })
-      .populate({
-        path: 'venue_id'
-      });
+    }).populate({
+      path: 'venue_id'
+    });
 
     const venueResults = await Venue.aggregate([
       {
