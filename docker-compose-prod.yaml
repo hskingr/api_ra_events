@@ -1,0 +1,37 @@
+version: '3'
+services:
+  resident_mapper_api:
+    container_name: "resident_mapper_api"
+    build: .
+    command: "npm run prod"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_CONNECTION_STRING_PROD=mongodb://root:rootpassword@mongodb/ra_data?authSource=admin
+      - TZ=Europe/London
+      - PORT=80
+    image: f4zphp27xi2s27yn/my_repo_topor:ra_events_api
+    ports:
+      - 100.100.78.77:8030:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.resident_mapper_api.rule=Host(`rm.libraryoftype.xyz`)"
+  resident_mapper_react_app:
+    container_name: resident_mapper_react_app
+    build:
+      context: .
+      args:
+        - REACT_APP_MAPBOX_ACCESS_TOKEN
+    image: f4zphp27xi2s27yn/my_repo_topor:ra_events_react_app
+    volumes:
+      # - ${CONTAINER_DATA_LOCATION}/nginx:/etc/nginx
+      - ${PWD}/.nginx/nginx.conf:/etc/nginx/nginx.conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.resident_mapper_react_app.rule=Host(`residentmapper.net`)"
+      # - "traefik.http.routers.resident_mapper_react_app.service=api@internal"
+      - "traefik.http.routers.resident_mapper_react_app.entrypoints=websecure"
+      - "traefik.http.routers.resident_mapper_react_app.tls.certresolver=letsencrypt"
+networks:
+  default:
+    external: true
+    name: myNetwork
