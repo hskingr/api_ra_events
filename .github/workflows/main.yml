@@ -9,7 +9,6 @@ on:
 
 jobs:
   run_pull:
-    needs: build
     name: run pull
     runs-on: ubuntu-latest
 
