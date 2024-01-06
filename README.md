@@ -4,12 +4,16 @@ This is a frontend web application that serves as a point for the user to query 
 
 This is dependent on the main web scraping application here: [RA Music Events Grabber](https://github.com/hskingr/music_events_grabber)
 
-### To Run
+### To Run in Development
 
 ```
 docker compose build
 docker compose up
 ```
+### Pushing to Github
+
+A build will be automatically created via Github actions and the API will be deployed on the remote server.
+
 
 ### Environmnet Variables
 
