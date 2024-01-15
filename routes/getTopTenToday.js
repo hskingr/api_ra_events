@@ -9,7 +9,9 @@ router.post('/getTopTenToday', async (req, res) => {
     logger.info(`Request made to getTopTenToday`);
 
     const result = await queryTopTenToday(req.body);
-    logger.info(result.length);
+
+    // Debugging result in production. Remove after testing.
+    logger.info(result);
 
     if (result.length === 0) {
       logger.info('No results');

@@ -22,6 +22,9 @@ router.post(
     const { lat, long, date, pageNumber } = req.body;
     const result = await getNearestEvents({ lat, long, date, pageNumber: Number(pageNumber) });
 
+    // Debugging result in production. Remove after testing.
+    logger.info(result);
+
     if (result.length === 0) {
       logger.info('No results');
       return res.status(404).json({ message: 'No results found' });

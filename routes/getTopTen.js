@@ -11,6 +11,9 @@ router.post('/getTopTen', async (req, res) => {
     const result = await queryTopTen(req.body);
     logger.info(result);
 
+    // Debugging result in production. Remove after testing.
+    logger.info(result);
+
     res.send(result);
   } catch (error) {
     logger.error(`Error occurred in getTopTen: ${error}`);
