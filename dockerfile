@@ -1,6 +1,6 @@
 FROM node:14-slim
-WORKDIR /
-COPY . /
-COPY package.json /
+WORKDIR /app
+COPY . .
+COPY package.json package.json
 RUN npm i
 EXPOSE 80

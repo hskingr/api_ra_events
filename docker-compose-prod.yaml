@@ -15,6 +15,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.resident_mapper_api.rule=Host(`rm.libraryoftype.xyz`)"
+    volumes:
+      # - ${CONTAINER_DATA_LOCATION}/nginx:/etc/nginx
+      - ./logs:/app/logs
   resident_mapper_react_app:
     container_name: resident_mapper_react_app
     build:
