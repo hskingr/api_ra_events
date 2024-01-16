@@ -9,6 +9,8 @@ export default async function connectDB() {
     connectionDataString = config.get('MONGODB_CONNECTION_STRING_DEV');
   } else if (process.env.NODE_ENV === 'production') {
     connectionDataString = config.get('MONGODB_CONNECTION_STRING_PROD');
+  } else if (process.env.NODE_ENV === 'test') {
+    connectionDataString = config.get('MONGODB_CONNECTION_STRING_TEST');
   }
 
   if (!connectionDataString) {
@@ -38,6 +40,16 @@ export default async function connectDB() {
     });
   } catch (err) {
     logger.error(`Error connecting to MongoDB: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+export async function disconnectDB() {
+  try {
+    await mongoose.disconnect();
+    logger.info('Disconnected from MongoDB');
+  } catch (error) {
+    logger.error('Error while disconnecting from MongoDB', error);
     process.exit(1);
   }
 }

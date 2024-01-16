@@ -1,4 +1,4 @@
 {
   "PORT": 8030,
-  "MONGODB_CONNECTION_STRING_DEV": "mongodb://root:rootpassword@mongodb/ra_data_test?authSource=admin"
+  "MONGODB_CONNECTION_STRING_DEV": "mongodb://root:rootpassword@100.100.78.77:27017/ra_data_test?authSource=admin"
 }

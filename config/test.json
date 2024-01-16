@@ -1,0 +1,4 @@
+{
+  "PORT": 8040,
+  "MONGODB_CONNECTION_STRING_TEST": "mongodb://root:rootpassword@mongodb:27017/ra_data_test?authSource=admin"
+}
