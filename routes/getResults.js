@@ -25,7 +25,7 @@ router.post(
     // Debugging result in production. Remove after testing.
     logger.info(result);
 
-    if (result.length === 0) {
+    if (!result || result.length === 0) {
       logger.info('No results');
       return res.status(404).json({ message: 'No results found' });
     }

@@ -1,5 +1,12 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { get } from 'stack-trace';
+
+const getCallerInfo = () => {
+  const trace = get();
+  const caller = trace[2]; // Index 2 gives the caller's info
+  return `${caller.getFileName()}:${caller.getLineNumber()}`;
+};
 
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
@@ -7,7 +14,7 @@ const logger = winston.createLogger({
     winston.format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss'
     }),
-    winston.format.json()
+    winston.format.printf((info) => `${info.timestamp} [${info.level}]: ${info.message} (at ${getCallerInfo()})`)
   ),
   defaultMeta: { service: 'user-service' },
   transports: [

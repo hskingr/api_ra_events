@@ -14,14 +14,14 @@ async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
     const formattedDate = typeof theDate === 'string' ? parseISO(theDate) : theDate;
     logger.info(`Formatted date: ${formattedDate}`);
     logger.info(`Start of day: ${startOfDay(formattedDate)}, end of day: ${endOfDay(formattedDate)}`);
-
     const eventResults = await Event.find({
       date: {
         $gte: startOfDay(formattedDate),
         $lte: endOfDay(formattedDate)
       }
-    }).populate('venue_id');
-
+    }).populate({
+      path: 'venue_id'
+    });
     const venueResults = await Venue.aggregate([
       {
         $geoNear: {
@@ -32,18 +32,22 @@ async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
       }
     ]);
 
-    const eventsTodaySortedByClosest = venueResults.flatMap((venueResult) => {
-      const venueDocument = venueResult.name || null;
-      return eventResults
-        .filter((eventResult) => {
-          const eventDocument = eventResult.venue_id?.name || null;
-          return venueDocument !== null && eventDocument !== null && eventDocument === venueDocument;
-        })
-        .map((eventResult) => ({
-          eventResult,
-          dist: venueResult.dist
-        }));
-    });
+    const eventsTodaySortedByClosest = [];
+
+    for (let v = 0; v < venueResults.length; v += 1) {
+      const venueDocument = typeof venueResults[v].name !== `undefined` ? venueResults[v].name : null;
+      for (let e = 0; e < eventResults.length; e += 1) {
+        const eventDocument = typeof eventResults[e].venue_id !== `undefined` ? eventResults[e].venue_id.name : null;
+        if (venueDocument !== null && eventDocument !== null && eventDocument === venueDocument) {
+          const pushedObj = {
+            eventResult: eventResults[e],
+            dist: venueResults[v].dist
+          };
+          // console.log(pushedObj.eventResult.venue, pushedObj.eventResult.eventName, pushedObj.eventResult.date, pushedObj.dist);
+          eventsTodaySortedByClosest.push(pushedObj);
+        }
+      }
+    }
 
     const amountOfResults = eventsTodaySortedByClosest.length;
     logger.info(`Amount of results: ${amountOfResults}`);
@@ -64,7 +68,7 @@ async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
 
     return result;
   } catch (error) {
-    logger.error(error);
+    logger.error(`Error: ${error.message}, Stack: ${error.stack}`);
     return null;
   }
 }

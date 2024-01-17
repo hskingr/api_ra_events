@@ -1,6 +1,5 @@
 import request from 'supertest';
 import app from '../app'; // Import your Express app
-import logger from '../logger';
 import connectDB, { disconnectDB } from '../db';
 
 describe('Routes', () => {
