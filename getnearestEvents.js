@@ -1,7 +1,6 @@
 import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import Venue from './venueModel.js';
 import Event from './eventModel.js';
-import Artist from './artistModel.js';
 import logger from './logger.js';
 
 const RESULTS_PER_PAGE = 10;
@@ -14,42 +13,54 @@ async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
     const formattedDate = typeof theDate === 'string' ? parseISO(theDate) : theDate;
     logger.info(`Formatted date: ${formattedDate}`);
     logger.info(`Start of day: ${startOfDay(formattedDate)}, end of day: ${endOfDay(formattedDate)}`);
-    const eventResults = await Event.find({
-      date: {
-        $gte: startOfDay(formattedDate),
-        $lte: endOfDay(formattedDate)
-      }
-    }).populate({
-      path: 'venue_id'
-    });
-    const venueResults = await Venue.aggregate([
+
+    const venues = await Venue.aggregate([
       {
         $geoNear: {
           near: { type: 'Point', coordinates: [parseFloat(long), parseFloat(lat)] },
+          distanceField: 'dist.calculated',
           key: 'location',
-          distanceField: 'dist.calculated'
+          includeLocs: 'dist.location',
+          spherical: true
         }
       }
-    ]);
+    ]).exec();
 
-    const eventsTodaySortedByClosest = [];
+    const venueData = venues.map((venue) => ({ _id: venue._id, dist: venue.dist }));
 
-    for (let v = 0; v < venueResults.length; v += 1) {
-      const venueDocument = typeof venueResults[v].name !== `undefined` ? venueResults[v].name : null;
-      for (let e = 0; e < eventResults.length; e += 1) {
-        const eventDocument = typeof eventResults[e].venue_id !== `undefined` ? eventResults[e].venue_id.name : null;
-        if (venueDocument !== null && eventDocument !== null && eventDocument === venueDocument) {
-          const pushedObj = {
-            eventResult: eventResults[e],
-            dist: venueResults[v].dist
-          };
-          // console.log(pushedObj.eventResult.venue, pushedObj.eventResult.eventName, pushedObj.eventResult.date, pushedObj.dist);
-          eventsTodaySortedByClosest.push(pushedObj);
-        }
+    const eventsTwo = await Event.find({
+      date: {
+        $gte: startOfDay(formattedDate),
+        $lte: endOfDay(formattedDate)
+      },
+      venue_id: { $in: venueData.map((venue) => venue._id) }
+    })
+      .populate('venue_id')
+      .exec();
+
+    eventsTwo.forEach((event) => {
+      const venueDistData = venueData.find((venue) => venue._id.equals(event.venue_id._id));
+      if (venueDistData) {
+        event.venue_id.dist = venueDistData.dist;
       }
-    }
+    });
 
-    const amountOfResults = eventsTodaySortedByClosest.length;
+    const newEvents = eventsTwo.sort((a, b) => a.venue_id.dist.calculated - b.venue_id.dist.calculated);
+    const eventsTodaySortedByClosestTwo = [];
+
+    newEvents.forEach((event) => {
+      console.log('venue_id:', event.venue_id.name);
+      console.log('venue_id.dist:', event.venue_id.dist);
+      console.log('event_name:', event.eventName);
+
+      const pushedObj = {
+        eventResult: event,
+        dist: event.venue_id.dist
+      };
+      eventsTodaySortedByClosestTwo.push(pushedObj);
+    });
+
+    const amountOfResults = eventsTodaySortedByClosestTwo.length;
     logger.info(`Amount of results: ${amountOfResults}`);
     const maxPages = Math.floor(amountOfResults / RESULTS_PER_PAGE);
     logger.info(`Max pages: ${maxPages}`);
@@ -61,7 +72,7 @@ async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
     logger.info(`Current page number: ${pageNumber}`);
 
     const result = {
-      requestedEvents: eventsTodaySortedByClosest.slice(startPage, pageNumberLimit),
+      requestedEvents: eventsTodaySortedByClosestTwo.slice(startPage, pageNumberLimit),
       amountOfResults
     };
     logger.info(result.requestedEvents.map((item) => item.eventResult.eventName));

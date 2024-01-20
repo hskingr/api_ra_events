@@ -11,7 +11,7 @@ const EventSchema = new Schema(
     //   type: Schema.Types.String,
     //   ref: "Venue",
     // },
-    venue_id: { type: Schema.Types.String, ref: 'Venue' },
+    venue_id: { type: Schema.Types.ObjectId, ref: 'Venue' },
     address: String,
     date: Date,
     lineup: String,
