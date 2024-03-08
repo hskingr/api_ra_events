@@ -31,12 +31,14 @@ export async function getVenues(long, lat) {
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of event objects.
  */
 async function getEvents(date) {
-  return await Event.find({
+  const events = await Event.find({
     date: {
       $gte: startOfDay(date),
       $lte: endOfDay(date)
     }
-  });
+  }).populate('venue_id');
+
+  return events;
 }
 
 /**
@@ -60,8 +62,8 @@ export function filterEventsByDate(events, date) {
  */
 export function sortEventsByDistance(events, venueData) {
   return events.sort((a, b) => {
-    const venueA = venueData.find((venue) => venue._id.equals(a.venue_id));
-    const venueB = venueData.find((venue) => venue._id.equals(b.venue_id));
+    const venueA = venueData.find((venue) => venue._id.equals(a.venue_id._id));
+    const venueB = venueData.find((venue) => venue._id.equals(b.venue_id._id));
     return venueA.dist.calculated - venueB.dist.calculated;
   });
 }
@@ -84,13 +86,17 @@ export async function getNearestEvents({ long, lat, date, pageNumber = 0 }) {
     const venueData = venues.map((venue) => ({ _id: venue._id, dist: venue.dist }));
 
     const events = await getEvents(formattedDate);
+
     const eventsToday = filterEventsByDate(events, formattedDate);
     const eventsSortedByDistance = sortEventsByDistance(eventsToday, venueData);
 
-    const eventsWithDistance = eventsSortedByDistance.map((event) => ({
-      eventResult: event,
-      dist: event.venue_id.dist
-    }));
+    const eventsWithDistance = eventsSortedByDistance.map((event) => {
+      // const venue = venueData.find((venue) => venue._id.equals(event.venue_id));
+      return {
+        eventResult: event,
+        dist: event.venue_id.dist
+      };
+    });
 
     const amountOfResults = eventsWithDistance.length;
     const maxPages = Math.floor(amountOfResults / RESULTS_PER_PAGE);
